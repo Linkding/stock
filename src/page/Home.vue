@@ -1,7 +1,6 @@
 <template>
     <div>
-        <Nav/>
-        <Login ref="onShow"/>
+        <Login ref="onShow" @afterLogin="after_login_success"/>
         <div class="mask" v-if="show_trade">
              <div class="add_trade">
                 <div class="row header">
@@ -79,7 +78,7 @@
                         </div>
                     </form>
                   </div>
-                  <div class="col-lg-4 right" :afterLogin="after_login_success">
+                  <div class="col-lg-4 right" >
                       <div v-if="username">
                         {{username}}
                         <span @click="logout">退出</span>
@@ -91,7 +90,7 @@
                     <div class="col-lg-3">持有市值：{{total_value}}</div>
                     <div class="col-lg-3">总盈亏：{{total_value}}</div>
                     <div class="col-lg-6 right">
-                      <button  @click="test()" type="submit"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+                      <button  @click="update_real()" type="submit"><i class="fa fa-refresh" aria-hidden="true"></i></button>
                     </div>
                 </div>
                 <table>
@@ -164,7 +163,8 @@ export default {
     };
   },
   methods: {
-    test(){
+    //获取最新股价
+    update_real(){
       console.log('this.stock_code_list',this.stock_code_list);
       http.api(this.stock_code_list)
         .then(r=>{
@@ -172,21 +172,19 @@ export default {
           this.meger_real_to_stock();
         })
     },
+    //登录成功后
     after_login_success(row){
-      this.username = row.username;
-      console.log('this.username',this.username);
-      
+      this.username = row[0].name;
+    },
+    //退出
+    logout(){
+      helper.remove_ls('user_id');
+      this.username = '';
     },
     //显示登录页面
     toggle_login() {
       this.$nextTick(() => {
         this.$refs.onShow.toggle_login();
-      });
-    },
-    read_real() {
-      http.api().then(r => {
-        this.real = r.data;
-        console.log("r", r);
       });
     },
     //四舍五入计算
@@ -277,7 +275,9 @@ export default {
       });
     },
     read_trade(code, index, on_success) {
-      http.post("trade/search", { or: { stock_code: code } }).then(r => {
+      http.post("trade/search", { 
+        or: { stock_code: code } ,
+        }).then(r => {
         this.trade_list = r.data;
         if (on_success) on_success(index, this.trade_list);
       });
@@ -320,7 +320,6 @@ export default {
     this.read_account();
     // this.read_trade()
     this.init_stock();
-    // this.read_real();
   },
   watch: {
     real: {

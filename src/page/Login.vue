@@ -85,13 +85,11 @@ export default {
         },
         submit(e) {
         e.preventDefault();
-        http
-            .post("user/search", {
+        http.post("user/search", {
             where: {
                 and: { name: this.current.name }
             }
-            })
-            .then(r => {
+            }).then(r => {
                 let row = r.data
                 if(row)
                     this.user_id = row[0].id;

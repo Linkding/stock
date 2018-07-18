@@ -35,6 +35,7 @@
     //         nullable:false,
     //     }
     // })
+    http.post('MODEL/READ')
     // http.post('captcha/sms', { phone : 13760613343 });
     // http.post('captcha/mail', { email : '2413557718@qq.com' })
 </script>
@@ -87,50 +88,50 @@
     //         },
     //     ]
     // });
-    http.post('MODEL/CREATE',{
-        name:'trade',
-        force:true,
-        structure:[
-            {
-                name:'user_id',
-                type:'integer',
-                nullable:true,
-            },
-            {
-                name:'stock_code',
-                type:'string',
-                nullable:true,
-            },
-            {
-                name:'stock_name',
-                type:'text',
-                nullable:true,
-            },
-            {
-                name:'account_id',
-                type:'integer',
-                nullable:true,
-            },
-            {
-                name:'account_belong',//账户归属人
-                type:'text',
-                nullable:true,
-            },
-            {
-                name:'cost',//成本
-                type:'float',
-                nullable:true,
-            },
-            {
-                name:'shares',//股数
-                type:'integer',
-                nullable:true,
-            },
-            {
-                name:'created_at',
-                type:'dateTime',
-                nullable:true,
-            }
-        ]
-    });
+    // http.post('MODEL/CREATE',{
+    //     name:'trade',
+    //     force:true,
+    //     structure:[
+    //         {
+    //             name:'user_id',
+    //             type:'integer',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'stock_code',
+    //             type:'string',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'stock_name',
+    //             type:'text',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'account_id',
+    //             type:'integer',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'account_belong',//账户归属人
+    //             type:'text',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'cost',//成本
+    //             type:'float',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'shares',//股数
+    //             type:'integer',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'created_at',
+    //             type:'dateTime',
+    //             nullable:true,
+    //         }
+    //     ]
+    // });
 </script>
