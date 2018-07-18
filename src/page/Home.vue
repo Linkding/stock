@@ -64,8 +64,7 @@
         <div class="container">
             <div>
                 <div class=" search-bar">
-                  <div class="col-lg-8">
-                    
+                  <div class="col-lg-8">                    
                     <form @submit="cou_stock($event)">
                         <div class="input-control">
                             <input type="text" placeholder="股票代码" v-model="current_stock.code">
@@ -78,10 +77,10 @@
                         </div>
                     </form>
                   </div>
-                  <div class="col-lg-4 right" >
+                  <div class="col-lg-4 right log" >
                       <div v-if="username">
-                        {{username}}
-                        <span @click="logout">退出</span>
+                        <span class="username">{{username}}</span>
+                        <span class="logout" @click="logout">退出</span>
                       </div>
                       <button v-else @click="toggle_login">登录</button>
                   </div>
@@ -408,5 +407,23 @@ table thead {
 }
 .banner button:hover {
   background: #E2D4C0;
+}
+
+
+.log span {
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 8px;
+  padding: 5px;
+}
+
+
+.log .username {
+  font-size: 15px;
+  border-bottom: 1px solid rgba(0,0,0,.5); 
+}
+
+.log .logout {
+  font-size: 10px;
 }
 </style>
