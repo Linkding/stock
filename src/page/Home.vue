@@ -14,12 +14,12 @@
                     <div>
                         <form v-if="show_trade_form" @submit="cou_trade($event)">
                             <div class="input-control">
-                                <select v-model="current_trade.account_name">
-                                    <option v-for="(account,index) in account_list" :key="index" :value="account.name">{{account.name}}</option>
+                                <select v-model="current_trade.account_id">
+                                    <option v-for="(account,index) in account_list" :key="index" :value="account.id">{{account.name}}</option>
                                 </select>
                             </div>
                             <div class="input-control">
-                                <input type="text" placeholder="姓名" v-model="current_trade.user"/>
+                                <input type="text" placeholder="账户归属人" v-model="current_trade.account_belong"/>
                             </div>
                                 <div class="input-control">
                                 <input type="text" placeholder="股数" v-model="current_trade.shares"/>
@@ -48,8 +48,8 @@
                     <tbody>
                         <tr v-for="(row,index) in trade_list" :key="index">   
                             <td>{{index + 1}}</td>
-                            <td>{{row.account_name}}</td>
-                            <td>{{row.user}}</td>
+                            <td>{{row.$account.name}}</td>
+                            <td>{{row.account_belong}}</td>
                             <td>{{row.shares}}</td>
                             <td>{{row.cost}}</td>
                             <td>
@@ -229,6 +229,8 @@ export default {
       this.update_cal_stock(this.on_click_stock.index, this.trade_list);
     },
     update_cal_stock(index, list) {
+      console.log('list',list);
+      
       //计算股票总数
       this.stock_list[index].shares = helper.math_round(
         helper.sum_arr_by_prop(list, "shares")
@@ -277,8 +279,14 @@ export default {
     read_trade(code, index, on_success) {
       http.post("trade/search", { 
         or: { stock_code: code } ,
+        with:[
+          {model:'account',type:'has_one'},
+          {model:'user',type:'has_one'},
+        ]
         }).then(r => {
         this.trade_list = r.data;
+        console.log('this.trade_list',this.trade_list);
+        
         if (on_success) on_success(index, this.trade_list);
       });
     },
