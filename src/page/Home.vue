@@ -54,7 +54,7 @@
                             <td>{{row.cost}}</td>
                             <td>
                                 <span><button @click="update_trade(row)">更新</button></span>
-                                <span><button @click="remove_trade(row.id,on_click_stock.number)">删除</button></span>
+                                <span><button @click="remove_trade(row.id,on_click_stock.code)">删除</button></span>
                             </td>
                         </tr>
                     </tbody>
@@ -159,6 +159,7 @@ export default {
       stock_code_list: [],
       real: [],
       username:'',
+      user_id:'',
     };
   },
   methods: {
@@ -167,13 +168,15 @@ export default {
       console.log('this.stock_code_list',this.stock_code_list);
       http.api(this.stock_code_list)
         .then(r=>{
-          this.real = r.data;
-          this.meger_real_to_stock();
+          this.real = r;
+          console.log('this.real',this.real);
+          // this.meger_real_to_stock();
         })
     },
     //登录成功后
     after_login_success(row){
       this.username = row[0].name;
+      this.init_stock();
     },
     //退出
     logout(){
@@ -203,10 +206,11 @@ export default {
       this.show_trade_form = false;
       this.current_trade = {};
     },
+    //点击打开交易记录
     on_show_trade(name, code, index) {
       this.show_trade = true;
       this.on_click_stock.name = name;
-      this.on_click_stock.number = code;
+      this.on_click_stock.code = code;
       this.on_click_stock.index = index;
 
       this.read_trade(code);
@@ -214,19 +218,22 @@ export default {
     cou_trade(e) {
       e.preventDefault();
       //更新前，获取对应股票的id和名字,以及用户id
-      this.current_trade.stock_code = this.on_click_stock.number;
+      this.current_trade.stock_code = this.on_click_stock.code;
       this.current_trade.stock_name = this.on_click_stock.name;
       this.current_trade.user_id = helper.get('user_id');
 
       let action = this.current_trade.id ? "update" : "create";
       http.post(`trade/${action}`, this.current_trade).then(r => {
-        this.read_trade(this.on_click_stock.number);
+        this.read_trade(this.on_click_stock.code,
+                        this.on_click_stock.index,
+                        this.update_cal_stock);
         this.current_trade = {};
       });
 
       //更新后，将对应股的二次运算数据重算
-      this.update_cal_stock(this.on_click_stock.index, this.trade_list);
+      // this.update_cal_stock(this.on_click_stock.index, this.trade_list);
     },
+    //计算对应股票需要二次运算数据
     update_cal_stock(index, list) {
       console.log('list',list);
       
@@ -242,7 +249,7 @@ export default {
     },
     cou_stock(e) {
       e.preventDefault();
-      this.current_stock.user_id = helper.get('user_id');
+      this.current_stock.user_id = this.user_id;
       let action = this.current_stock.id ? "update" : "create";
       http.post(`stock/${action}`, this.current_stock).then(r => {
         this.current_stock = {};
@@ -252,7 +259,9 @@ export default {
     remove_trade(id, code) {
       if (confirm("确定需要删除吗？"))
         http.post("trade/delete", { id }).then(r => {
-          this.read_trade(code);
+          this.read_trade(code,
+                          this.on_click_stock.index,
+                          this.update_cal_stock);
         });
     },
     remove_stock(id) {
@@ -266,7 +275,9 @@ export default {
       this.show_trade_form = true;
     },
     read_stock() {
-      http.post("stock/read").then(r => {
+      http.post("stock/search",{
+        or:{user_id :this.user_id},
+      }).then(r => {
         this.stock_list = r.data;
       });
     },
@@ -290,12 +301,20 @@ export default {
       });
     },
     init_stock() {
-      http.post("stock/read").then(r => {
-        //获取stock数据
-        this.stock_list = r.data;
-        //获取所有的股票代码，并取得对应的trade数据,并计算得出需要二次运算得出的值
-        this.cal_stock_data();
-      });
+      this.is_login();
+
+      if(this.user_id){
+        http.post("stock/search",{
+            or:{user_id :this.user_id},
+            }).then(r => {
+            //获取stock数据
+            this.stock_list = r.data;
+            //获取所有的股票代码，并取得对应的trade数据,并计算得出需要二次运算得出的值
+            this.cal_stock_data();
+        });
+      }else {
+        this.toggle_login();
+      }
     },
     cal_stock_data() {
       let stock_list = this.stock_list;
@@ -316,6 +335,13 @@ export default {
         }
       }
     },
+    is_login(){
+      let row = helper.get('uinfo');
+      if(!row)
+        return;      
+      this.username = row[0].name;
+      this.user_id = row[0].id;
+    }
   },
   computed: {
     total_value: function() {

@@ -10,12 +10,25 @@
                     <span @click="auth_by='signup'" :class="'col-lg-6 ' + (auth_by == 'signup'? 'active':'')">注册</span>
                 </div>
                 <form  @submit="submit($event)">
-                    <div class="input-control">
+                    <div class="input-control" v-if="auth_by == 'login'" :key="'username'">
                         <input id="username"
-                             type="text" placeholder="用户名"
-                             v-model="current.name"
-                             v-validator="'required'"
-                             error-el="#username_error"
+                            type="text" placeholder="用户名"
+                            v-model="current.username"
+                            v-validator="'required'"
+                            error-el="#username_error"
+                            autocomplete="off"
+                        >
+                        <div class="error-list">
+                            <div id="username_error"></div>
+                        </div>
+                    </div>
+                    <div class="input-control" v-if="auth_by == 'signup'" :key="'user'">
+                        <input id="username"
+                            type="text" placeholder="用户名"
+                            v-model="current.name"
+                            v-validator="'required|not_exist:user,name'"
+                            error-el="#username_error"
+                            autocomplete="off"
                         >
                         <div class="error-list">
                             <div id="username_error"></div>
@@ -84,20 +97,34 @@ export default {
         this.show_login = !this.show_login;
         },
         submit(e) {
-        e.preventDefault();
-        http.post("user/search", {
-            where: {
-                and: { name: this.current.name }
+            e.preventDefault();
+            if(this.auth_by=='login'){
+                http.post("user/search", {
+                    where: {
+                        and: { name: this.current.username }
+                    }
+                    }).then(r => {
+                        let row = r.data
+                        
+                        if(row)
+                            delete row[0].password
+                            helper.set('uinfo',row);
+                            this.show_login = false;
+                            // 向父组件传递参数
+                            this.$emit('afterLogin',row)
+                    });
+            }else if(this.auth_by == 'signup'){
+                http.post('user/create',this.current)
+                    .then(r=>{
+                        console.log('r.data',r.data);
+                        console.log('r.success',r.success)
+                        // let row = r.dat;
+                        // this.toggle_login();
+                        // this.$router.push('/');
+                        // // 向父组件传递参数
+                        // this.$emit('afterLogin',row)
+                    })
             }
-            }).then(r => {
-                let row = r.data
-                if(row)
-                    this.user_id = row[0].id;
-                    helper.set('user_id',this.user_id);
-                    this.show_login = false;
-                    // 向父组件传递参数
-                    this.$emit('afterLogin',row)
-            });
         }
     }
 };
