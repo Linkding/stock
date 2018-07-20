@@ -10,10 +10,10 @@
                     <span @click="auth_by='signup'" :class="'col-lg-6 ' + (auth_by == 'signup'? 'active':'')">注册</span>
                 </div>
                 <form  @submit="submit($event)">
-                    <div class="input-control" v-if="auth_by == 'login'" :key="'username'">
-                        <input id="username"
+                    <div class="input-control" v-if="auth_by == 'login'">
+                        <input
                             type="text" placeholder="用户名"
-                            v-model="current.username"
+                            v-model="current.name"
                             v-validator="'required'"
                             error-el="#username_error"
                             autocomplete="off"
@@ -22,8 +22,8 @@
                             <div id="username_error"></div>
                         </div>
                     </div>
-                    <div class="input-control" v-if="auth_by == 'signup'" :key="'user'">
-                        <input id="username"
+                    <div class="input-control" v-if="auth_by == 'signup'">
+                        <input
                             type="text" placeholder="用户名"
                             v-model="current.name"
                             v-validator="'required|not_exist:user,name'"
@@ -34,7 +34,7 @@
                             <div id="username_error"></div>
                         </div>
                     </div>
-                    <div class="input-control">
+                    <div class="input-control" v-if="auth_by">
                         <input id="password" type="password" 
                             placeholder="密码"
                             v-validator="'required|min_length:2|max_length:6'"
@@ -45,7 +45,7 @@
                             <div id="password-error"></div>
                         </div>
                     </div>
-                    <div v-if="auth_by == 'signup'" :key="'signup'"  class="input-control">
+                    <div key="a" v-if="auth_by == 'signup'" class="input-control">
                         <input id="repassword" type="password" 
                             placeholder="重复密码"
                             v-validator="'required|shadow:#password'"
@@ -56,7 +56,7 @@
                             <div id="repassword-error"></div>
                         </div>
                     </div>
-                     <div v-if="auth_by == 'signup'"   class="input-control">
+                     <div :key="b" v-if="auth_by == 'signup'" class="input-control">
                         <input id="mail" type="text" 
                             placeholder="邮箱"
                             v-validator="'required|mail'"
@@ -95,6 +95,7 @@ export default {
     methods: {
         toggle_login() {
         this.show_login = !this.show_login;
+        this.current = {};
         },
         submit(e) {
             e.preventDefault();
@@ -116,13 +117,14 @@ export default {
             }else if(this.auth_by == 'signup'){
                 http.post('user/create',this.current)
                     .then(r=>{
-                        console.log('r.data',r.data);
+                        console.log('r.data',r);
                         console.log('r.success',r.success)
-                        // let row = r.dat;
+                        let row = r;
                         // this.toggle_login();
-                        // this.$router.push('/');
-                        // // 向父组件传递参数
-                        // this.$emit('afterLogin',row)
+                        this.show_login = false;
+                        this.$router.push('/');
+                        // 向父组件传递参数
+                        this.$emit('afterLogin',row)
                     })
             }
         }
