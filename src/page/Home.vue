@@ -9,7 +9,9 @@
                         <div class="col-lg-5"> 
                             <button @click="show_trade_form = !show_trade_form">+添加交易</button>
                         </div>
-                        <div class="col-lg-2 right"><i class="fa fa-times" aria-hidden="true"  @click="close_trade_mask()"></i></div>
+                        <div class="col-lg-2 right" @click="close_trade_mask">
+                          <i class="fa fa-times" aria-hidden="true"></i>
+                        </div>
                     </div>
                     <div>
                         <form v-if="show_trade_form" @submit="cou_trade($event)">
@@ -89,7 +91,9 @@
                     <div class="col-lg-3">持有市值：{{total_value}}</div>
                     <div class="col-lg-3">总盈亏：{{total_value}}</div>
                     <div class="col-lg-6 right">
-                      <button  @click="update_real()" type="submit"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+                      <button  @click="update_real()" type="button">
+                          <i class="fas fa-sync-alt"></i>
+                      </button>
                     </div>
                 </div>
                 <table>
@@ -123,13 +127,19 @@
                             <td>{{ toPercent(math_round(row.cost,row.shares)/total_value )|| '-' }}</td>
                             <td>{{ row.gain_loss|| '-'  }}</td>
                             <td>
-                                <i class="fa fa-calculator" aria-hidden="true" @click="on_show_trade(row.name,row.code,index)" ></i>
+                              <div  @click="on_show_trade(row.name,row.code,index)" >
+                                <i class="fa fa-calculator" aria-hidden="true"></i>
+                              </div>
                             </td>
                             <td>
-                                <i class="fa fa-times" aria-hidden="true" @click="remove_stock(row.id)"></i>
+                              <div @click="remove_stock(row.id)">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                              </div>
                             </td>
                             <td>
+                              <div>
                                 <i class="fa fa-bars" aria-hidden="true"></i>
+                              </div>
                             </td>
                         </tr>
                     </tbody>
@@ -165,7 +175,7 @@ export default {
   methods: {
     //获取最新股价
     update_real(){
-      console.log('this.stock_code_list',this.stock_code_list);
+      this.get_code_list();
       http.api(this.stock_code_list)
         .then(r=>{
           this.real = r;
@@ -180,7 +190,7 @@ export default {
     },
     //退出
     logout(){
-      helper.remove_ls('user_id');
+      helper.remove_ls('uinfo');
       this.username = '';
     },
     //显示登录页面
@@ -208,12 +218,28 @@ export default {
     },
     //点击打开交易记录
     on_show_trade(name, code, index) {
+      console.log('11',11);
+      
       this.show_trade = true;
       this.on_click_stock.name = name;
       this.on_click_stock.code = code;
       this.on_click_stock.index = index;
 
       this.read_trade(code);
+    },
+    //计算对应股票需要二次运算数据
+    update_cal_stock(index, list) {
+      console.log('list',list);
+      
+      //计算股票总数
+      this.stock_list[index].shares = helper.math_round(
+        helper.sum_arr_by_prop(list, "shares")
+      );
+      // //计算股票成本
+      this.stock_list[index].cost = helper.math_round(
+        helper.sum_arr_by_props(list, "cost", "shares") /
+          this.stock_list[index].shares
+      );
     },
     cou_trade(e) {
       e.preventDefault();
@@ -232,20 +258,6 @@ export default {
 
       //更新后，将对应股的二次运算数据重算
       // this.update_cal_stock(this.on_click_stock.index, this.trade_list);
-    },
-    //计算对应股票需要二次运算数据
-    update_cal_stock(index, list) {
-      console.log('list',list);
-      
-      //计算股票总数
-      this.stock_list[index].shares = helper.math_round(
-        helper.sum_arr_by_prop(list, "shares")
-      );
-      // //计算股票成本
-      this.stock_list[index].cost = helper.math_round(
-        helper.sum_arr_by_props(list, "cost", "shares") /
-          this.stock_list[index].shares
-      );
     },
     cou_stock(e) {
       e.preventDefault();
@@ -315,13 +327,13 @@ export default {
       }else {
         this.toggle_login();
       }
+
     },
     cal_stock_data() {
       let stock_list = this.stock_list;
 
       for (let i = 0; i < stock_list.length; i++) {
         let code = stock_list[i].code;
-        this.stock_code_list.push(code);//保存股票代码列表，留用
         this.read_trade(code, i, this.update_cal_stock);
       }
     },
@@ -335,12 +347,27 @@ export default {
         }
       }
     },
+    // 检查是否登录
     is_login(){
       let row = helper.get('uinfo');
       if(!row)
         return;      
       this.username = row[0].name;
       this.user_id = row[0].id;
+    },
+    // 获取当前股票代码
+    get_code_list(){
+      let stock_list = this.stock_list
+          ,len = stock_list.length
+          ;
+      // this.stock_code_list= [];
+
+      for (let i = 0; i < len; i++) {
+        let code = stock_list[i].code;
+        this.stock_code_list.push(code);
+      }
+      console.log('this.stock_code_list',this.stock_code_list);
+      
     }
   },
   computed: {
