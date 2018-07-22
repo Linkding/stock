@@ -287,7 +287,7 @@ export default {
       
       http.post("stock/read",{
         or:{user_id :this.user_id},
-        limit:17,
+        limit:50,
       }).then(r => {
         this.stock_list = r.data;
         if(on_success)
