@@ -106,10 +106,7 @@ export default {
     data() {
         return {
             auth_by:'login',
-            current: {
-                login:{},
-                signup:{},
-            },
+            current: {},
             user_id:'',
             show_login: false,
         };
@@ -124,11 +121,10 @@ export default {
             if(this.auth_by=='login'){
                 http.post("user/search", {
                     where: {
-                        and: { name: this.current.login.name }
+                        and: { name: this.current.name }
                     }
                     }).then(r => {
                         let row = r.data
-                        
                         if(row)
                             delete row[0].password
                             helper.set('uinfo',row);
