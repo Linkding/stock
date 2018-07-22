@@ -373,7 +373,7 @@ function go (el_form, el_input, el_error, rule) {
 }
 
 
-export default Vue.directive('validator', {
+export default Vue.directive('validator-login', {
   /**
    * 当此指令插入DOM中的一瞬间
    * @param el

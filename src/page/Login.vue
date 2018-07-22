@@ -9,12 +9,12 @@
                     <span @click="auth_by='login'" :class="'col-lg-6 ' + (auth_by == 'login'? 'active':'')">登录</span>
                     <span @click="auth_by='signup'" :class="'col-lg-6 ' + (auth_by == 'signup'? 'active':'')">注册</span>
                 </div>
-                <form  @submit="submit($event)">
-                    <div class="input-control" v-if="auth_by == 'login'">
+                <form v-if="auth_by == 'login'" :key="'login'" @submit="submit($event)">
+                    <div class="input-control">
                         <input
                             type="text" placeholder="用户名"
                             v-model="current.name"
-                            v-validator="'required'"
+                            v-validatorLogin="'required'"
                             error-el="#username_error"
                             autocomplete="off"
                         >
@@ -22,22 +22,10 @@
                             <div id="username_error"></div>
                         </div>
                     </div>
-                    <div class="input-control" v-if="auth_by == 'signup'">
-                        <input
-                            type="text" placeholder="用户名"
-                            v-model="current.name"
-                            v-validator="'required|not_exist:user,name'"
-                            error-el="#username_error"
-                            autocomplete="off"
-                        >
-                        <div class="error-list">
-                            <div id="username_error"></div>
-                        </div>
-                    </div>
-                    <div class="input-control" v-if="auth_by">
+                    <div class="input-control">
                         <input id="password" type="password" 
                             placeholder="密码"
-                            v-validator="'required|min_length:2|max_length:6'"
+                            v-validatorLogin="'required|min_length:2|max_length:6'"
                             error-el="#password-error" 
                             v-model="current.password"                           
                         >
@@ -45,10 +33,40 @@
                             <div id="password-error"></div>
                         </div>
                     </div>
-                    <div key="a" v-if="auth_by == 'signup'" class="input-control">
+                    <div class="input-control">
+                        <button type="submit">
+                            <span >登录</span>
+                        </button>
+                    </div>
+                </form>
+                <form v-if="auth_by == 'signup'" :key="'signup'" @submit="submit($event)">
+                    <div class="input-control">
+                        <input
+                            type="text" placeholder="用户名"
+                            v-model="current.name"
+                            v-validatorSignup="'required|not_exist:user,name'"
+                            error-el="#username_error"
+                            autocomplete="off"
+                        >
+                        <div class="error-list">
+                            <div id="username_error"></div>
+                        </div>
+                    </div>
+                    <div class="input-control">
+                        <input id="password" type="password" 
+                            placeholder="密码"
+                            v-validatorSignup="'required|min_length:2|max_length:6'"
+                            error-el="#password-error" 
+                            v-model="current.password"                           
+                        >
+                        <div class="error-list">
+                            <div id="password-error"></div>
+                        </div>
+                    </div>
+                    <div  class="input-control">
                         <input id="repassword" type="password" 
                             placeholder="重复密码"
-                            v-validator="'required|shadow:#password'"
+                            v-validatorSignup="'required|shadow:#password'"
                             error-el="#repassword-error"
                             v-model="current.repassword"
                         >
@@ -56,10 +74,10 @@
                             <div id="repassword-error"></div>
                         </div>
                     </div>
-                     <div :key="b" v-if="auth_by == 'signup'" class="input-control">
+                     <div class="input-control">
                         <input id="mail" type="text" 
                             placeholder="邮箱"
-                            v-validator="'required|mail'"
+                            v-validatorSignup="'required|mail'"
                             error-el="#mail-error" 
                             v-model="current.mail"   
                         >
@@ -69,8 +87,7 @@
                     </div>
                     <div class="input-control">
                         <button type="submit">
-                            <span v-if="auth_by == 'login'">登录</span>
-                            <span v-else>注册</span>
+                            <span >注册</span>
                         </button>
                     </div>
                 </form>
@@ -79,15 +96,20 @@
     </div>
 </template>
 <script>
-import validator from "../directive/validator";
+import validatorLogin from "../directive/validator";
+import validatorSignup from "../directive/validator";
+
 import http from "../util/http";
 import helper from "../util/helper";
 export default {
-    directives: { validator },
+    directives: { validatorLogin,validatorSignup },
     data() {
         return {
             auth_by:'login',
-            current: {},
+            current: {
+                login:{},
+                signup:{},
+            },
             user_id:'',
             show_login: false,
         };
@@ -102,7 +124,7 @@ export default {
             if(this.auth_by=='login'){
                 http.post("user/search", {
                     where: {
-                        and: { name: this.current.username }
+                        and: { name: this.current.login.name }
                     }
                     }).then(r => {
                         let row = r.data
