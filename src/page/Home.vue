@@ -179,7 +179,6 @@ export default {
       http.api(this.stock_code_list)
         .then(r=>{
           this.real = r;
-          console.log('this.real',this.real);
           // this.meger_real_to_stock();
         })
     },
@@ -218,8 +217,6 @@ export default {
     },
     //点击打开交易记录
     on_show_trade(name, code, index) {
-      console.log('11',11);
-      
       this.show_trade = true;
       this.on_click_stock.name = name;
       this.on_click_stock.code = code;
@@ -229,7 +226,6 @@ export default {
     },
     //计算对应股票需要二次运算数据
     update_cal_stock(index, list) {
-      console.log('list',list);
       
       //计算股票总数
       this.stock_list[index].shares = helper.math_round(
@@ -286,11 +282,16 @@ export default {
       this.current_trade = row;
       this.show_trade_form = true;
     },
-    read_stock() {
-      http.post("stock/search",{
+    read_stock(on_success) {
+      console.log('11',11);
+      
+      http.post("stock/read",{
         or:{user_id :this.user_id},
+        limit:17,
       }).then(r => {
         this.stock_list = r.data;
+        if(on_success)
+          on_success();
       });
     },
     read_account() {
@@ -307,7 +308,6 @@ export default {
         ]
         }).then(r => {
         this.trade_list = r.data;
-        console.log('this.trade_list',this.trade_list);
         
         if (on_success) on_success(index, this.trade_list);
       });
@@ -316,14 +316,7 @@ export default {
       this.is_login();
 
       if(this.user_id){
-        http.post("stock/search",{
-            or:{user_id :this.user_id},
-            }).then(r => {
-            //获取stock数据
-            this.stock_list = r.data;
-            //获取所有的股票代码，并取得对应的trade数据,并计算得出需要二次运算得出的值
-            this.cal_stock_data();
-        });
+        this.read_stock(this.cal_stock_data);
       }else {
         this.toggle_login();
       }
@@ -366,7 +359,6 @@ export default {
         let code = stock_list[i].code;
         this.stock_code_list.push(code);
       }
-      console.log('this.stock_code_list',this.stock_code_list);
       
     }
   },

@@ -55,6 +55,7 @@
                         </div>
                         <!-- <pagination :limit="limit" :totalCount="total" :onChange="on_page_change"/> -->
                 </div>
+                 <pagination :limit="limit" :totalCount="total" :onChange="on_page_change"/>
             </div>
         </div>
     </div>
