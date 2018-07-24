@@ -69,6 +69,7 @@
                   <div class="col-lg-8">                    
                     <form @submit="cou_stock($event)">
                         <div class="input-control">
+                            <!-- <DropDown :showInput="true" :api="'stack.code'"/> -->
                             <input type="text" placeholder="股票代码" v-model="current_stock.code">
                         </div>
                         <div class="input-control">
@@ -153,6 +154,7 @@ import http from "../util/http";
 import helper from "../util/helper";
 import Login from "./Login";
 import Nav from '../components/Nav';
+// import DropDown from '../components/DropDown';
 
 export default {
   components: { Login,Nav },
@@ -370,7 +372,6 @@ export default {
   },
   mounted() {
     this.read_account();
-    // this.read_trade()
     this.init_stock();
   },
   watch: {
