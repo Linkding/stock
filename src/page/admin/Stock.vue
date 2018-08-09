@@ -73,7 +73,7 @@ export default {
     return {
       show_form: false,
       with:[
-          {model:'user',type:'has_one'}
+          {model:'user',relation:'has_one'}
       ]
     };
   }

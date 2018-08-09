@@ -60,7 +60,7 @@ export default {
     return {
       show_form: false,
       with:[
-          {model:'account',type:'has_one'}
+          {model:'account',relation:'has_one'}
       ]
     };
   }

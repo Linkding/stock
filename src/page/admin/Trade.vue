@@ -100,8 +100,8 @@ export default {
       user_list:[],
       account_list:[],
       with:[
-          {model:'account',type:'has_one'},
-          {model:'user',type:'has_one'},
+          {model:'account',relation:'has_one'},
+          {model:'user',relation:'has_one'},
       ]
     };
   },

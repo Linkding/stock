@@ -305,8 +305,8 @@ export default {
       http.post("trade/search", { 
         or: { stock_code: code } ,
         with:[
-          {model:'account',type:'has_one'},
-          {model:'user',type:'has_one'},
+          {model:'account',relation:'has_one'},
+          {model:'user',relation:'has_one'},
         ]
         }).then(r => {
         this.trade_list = r.data;
