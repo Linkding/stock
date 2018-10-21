@@ -1,6 +1,8 @@
 <template>
     <div>
+        <!-- 登录组件 -->
         <Login ref="onShow" @afterLogin="after_login_success"/>
+        <!-- 交易浮窗 -->
         <div class="mask" v-if="show_trade">
              <div class="add_trade">
                 <div class="row header">
@@ -63,6 +65,7 @@
                 </table>
             </div>
         </div>
+        <!-- 主界面 -->
         <div class="container">
             <div>
                 <div class=" search-bar">
@@ -120,8 +123,9 @@
                             <td>{{ row.name }}</td>
                             <td>{{ row.code }}</td>
                             <td>{{row.price}}</td>
-                            <td>{{ row.change || '-'  }}</td>
-                            <td>{{ row.close|| '-'  }}</td>
+                            <!-- 涨跌幅 -->
+                            <td>{{ math_round(row.pct_change,1) + '%'}}</td> 
+                            <td>{{ row.pre_close|| '-'  }}</td>
                             <td>{{ row.cost || '-' }}</td>
                             <td>{{ row.shares || '-' }}</td>
                             <td>{{  math_round(row.price ,row.shares)  || '-'}}</td>
@@ -285,8 +289,6 @@ export default {
       this.show_trade_form = true;
     },
     read_stock(on_success) {
-      console.log('11',11);
-      
       http.post("stock/read",{
         or:{user_id :this.user_id},
         limit:50,
@@ -333,14 +335,21 @@ export default {
       }
     },
     meger_real_to_stock() {
-      let real_len = this.real.length;
+      let real = this.real; //点击更新从后端获取回来的单个股票最新数据
+      let real_len = real.length;
       for (let i = 0; i < real_len; i++) {
-        let stock_length = this.stock_list.length;
+        let stock_list = this.stock_list
+        let stock_length = stock_list.length;
         for (let r = 0; r < stock_length; r++) {
-          if (this.real[i].code == this.stock_list[r].code)
-            this.$set(this.stock_list[r],'price',this.real[i].close)
+          	if (real[i].ts_code.substring(0,6)  == stock_list[r].code){
+				console.log('111',111);
+            	this.$set(stock_list[r],'price',real[i].close)
+            	this.$set(stock_list[r],'pct_change',real[i].pct_change)
+            	this.$set(stock_list[r],'pre_close',real[i].pre_close)
+          	}
         }
       }
+      console.log('this.stock_list',this.stock_list);
     },
     // 检查是否登录
     is_login(){
