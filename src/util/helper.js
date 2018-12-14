@@ -7,6 +7,7 @@ let helper = {
     set,
     get,
     remove_ls,
+    add_percent_code,
 }
 //计算单个属性之和
 function sum_arr_by_prop(arr, prop) {
@@ -22,8 +23,7 @@ function sum_arr_by_props(arr, p1, p2) {
     if (!arr)
         return;
     return arr.reduce(function (a, b) {
-              
-        return a + parseInt(b[p1]) * parseInt(b[p2]);
+        return a + b[p1] * b[p2];
     }, 0)
 }
 // 四舍五入，并保留小数点后两位
@@ -53,5 +53,8 @@ function get(key){
 }
 function remove_ls(key){
     localStorage.removeItem(key);
+}
+function add_percent_code(val){
+    return val + '%'
 }
 export default helper

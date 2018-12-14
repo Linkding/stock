@@ -93,8 +93,9 @@
                 </div>
                 <div class="banner">
                     <div class="col-lg-3">持有市值：{{total_value}}</div>
-                    <div class="col-lg-3">总盈亏：{{total_value}}</div>
+                    <div class="col-lg-3">总盈亏：{{math_round(total_value - total_cost_value) }}</div>
                     <div class="col-lg-6 right">
+                      <!-- 点击获取最新股价 -->
                       <button  @click="update_real()" type="button">
                           <i class="fas fa-sync-alt"></i>
                       </button>
@@ -110,6 +111,7 @@
                             <th>昨收</th>
                             <th>成本</th>
                             <th>股数</th>
+                            <th>成本市值</th>
                             <th>持有市值</th>
                             <th>持仓比例</th>
                             <th>盈亏</th>
@@ -122,14 +124,18 @@
                         <tr id="stock-list" v-for="(row ,index) in stock_list" :key="index">
                             <td>{{ row.name }}</td>
                             <td>{{ row.code }}</td>
-                            <td>{{row.price}}</td>
+                            <td>{{row.code == 999999 ? parseInt(1) : row.price}}</td>
                             <!-- 涨跌幅 -->
-                            <td>{{ math_round(row.pct_change,1) + '%'}}</td> 
+                            <td>{{ row.pct_change && addPercentCode(math_round_after_multi(row.pct_change,1)) || '-'}}</td> 
                             <td>{{ row.pre_close|| '-'  }}</td>
                             <td>{{ row.cost || '-' }}</td>
                             <td>{{ row.shares || '-' }}</td>
-                            <td>{{  math_round(row.price ,row.shares)  || '-'}}</td>
-                            <td>{{ toPercent(math_round(row.cost,row.shares)/total_value )|| '-' }}</td>
+                            <!-- 成本市值 -->
+                            <td>{{  math_round_after_multi(row.cost ,row.shares)  ||math_round_after_multi(1,row.shares)  }}</td>
+                            <!-- 持有市值 -->
+                            <td>{{  math_round_after_multi(row.price ,row.shares)  ||math_round_after_multi(1,row.shares)  }}</td>
+                            <!-- 持仓比例 -->
+                            <td>{{total_value && toPercent(math_round_after_multi(row.cost,row.shares)/total_value) ||'-'}}</td>
                             <td>{{ row.gain_loss|| '-'  }}</td>
                             <td>
                               <div  @click="on_show_trade(row.name,row.code,index)" >
@@ -182,7 +188,12 @@ export default {
     //获取最新股价
     update_real(){
       this.get_code_list();
-      http.api(this.stock_code_list)
+      // 删除现金代码
+      let index = this.stock_code_list.indexOf('999999');
+      let query_code_lit = this.stock_code_list;
+      query_code_lit.splice(index,1);
+
+      http.api(query_code_lit)
         .then(r=>{
           this.real = r;
           // this.meger_real_to_stock();
@@ -204,13 +215,21 @@ export default {
         this.$refs.onShow.toggle_login();
       });
     },
-    //四舍五入计算
-    math_round(p1, p2) {
+    //相乘后，四舍五入计算
+    math_round_after_multi(p1,p2){
       return helper.math_round(p1 * p2);
+    },
+    // 四舍五入计算
+    math_round(num) {
+      return helper.math_round(num);
     },
     //转换百分比
     toPercent(num) {
       return helper.toPercent(num);
+    },
+    // 添加百分号
+    addPercentCode(val){
+      return helper.add_percent_code(val);
     },
     //关闭trade
     close_trade_mask() {
@@ -337,18 +356,26 @@ export default {
     meger_real_to_stock() {
       let real = this.real; //点击更新从后端获取回来的单个股票最新数据
       let real_len = real.length;
+      let stock_list = this.stock_list
+      let stock_length = stock_list.length;
       for (let i = 0; i < real_len; i++) {
-        let stock_list = this.stock_list
-        let stock_length = stock_list.length;
         for (let r = 0; r < stock_length; r++) {
           	if (real[i].ts_code.substring(0,6)  == stock_list[r].code){
-				console.log('111',111);
             	this.$set(stock_list[r],'price',real[i].close)
             	this.$set(stock_list[r],'pct_change',real[i].pct_change)
             	this.$set(stock_list[r],'pre_close',real[i].pre_close)
           	}
         }
       }
+      // 添加现金的相应数据字段
+      let index 
+      for (let i = 0; i <stock_length;i++){
+        if(stock_list[i].code == '999999')
+          index = i;
+      }
+      this.$set(stock_list[index],'price',1)
+      this.$set(stock_list[index],'pre_close',1)
+
       console.log('this.stock_list',this.stock_list);
     },
     // 检查是否登录
@@ -364,7 +391,6 @@ export default {
       let stock_list = this.stock_list
           ,len = stock_list.length
           ;
-      // this.stock_code_list= [];
 
       for (let i = 0; i < len; i++) {
         let code = stock_list[i].code;
@@ -374,8 +400,15 @@ export default {
     }
   },
   computed: {
+    // 计算总市值
     total_value: function() {
       let result = helper.sum_arr_by_props(this.stock_list, "price", "shares");
+      return helper.math_round(result);
+      // console.log('helper.math_round(result',helper.math_round(result));
+      
+    },
+    total_cost_value: function(){
+      let result = helper.sum_arr_by_props(this.stock_list, "cost", "shares");
       return helper.math_round(result);
     }
   },
