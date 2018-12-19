@@ -1,7 +1,7 @@
 <script src="node_modules/axios/dist/axios.js"></script>
 <script src="http.js"></script>
 <script>
-    // http.post('stock/read')
+    http.post('stock/read')
     // http.post('stock/create_many',{
     //     data:[
     //     {"user_id":1,'id':13},
@@ -38,6 +38,13 @@
     // http.post('MODEL/READ')
     // http.post('captcha/sms', { phone : 13760613343 });
     // http.post('captcha/mail', { email : '2413557718@qq.com' })
+    // http.post('trade/search',{ 
+    //     or: { stock_code: '601155' } ,
+    //     with:[
+    //       {model:'account',relation:'has_one'},
+    //       {model:'user',relation:'has_one'},
+    //     ]
+    //     })
 </script>
 <script>
     //  http.post('MODEL/CREATE',{
@@ -78,26 +85,26 @@
           
     //     ]
     // });
-    http.post('MODEL/CREATE',{
-        name:'user',
-        structure:[
-            {
-                name:'name',
-                type:'text',
-                nullable:true,
-            },
-            {
-                name:'password',
-                type:'string',
-                nullable:true,
-            },
-            {
-                name:'mail',
-                type:'string',
-                nullable:true,
-            },
-        ]
-    });
+    // http.post('MODEL/CREATE',{
+    //     name:'user',
+    //     structure:[
+    //         {
+    //             name:'name',
+    //             type:'text',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'password',
+    //             type:'string',
+    //             nullable:true,
+    //         },
+    //         {
+    //             name:'mail',
+    //             type:'string',
+    //             nullable:true,
+    //         },
+    //     ]
+    // });
     // http.post('MODEL/CREATE',{
     //     name:'trade',
     //     force:true,

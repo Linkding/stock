@@ -64,13 +64,13 @@
                                 <tbody>
                                     <tr v-for="(row,index) in list" :key="index">
                                     <td>{{row.id}}</td>
-                                    <td>{{row.$user.name}}</td>
-                                    <td>{{row.stock_code}}</td>
+                                    <td>{{row.$user  ? row.$user.name: '-'}}</td>
+                                    <td>{{row.stock_code || '-'}}</td>
                                     <td>{{row.stock_name}}</td>
-                                    <td>{{row.cost}}</td>
-                                    <td>{{row.shares}}</td>
-                                    <td>{{row.$account.name}}</td>
-                                    <td>{{row.account_belong}}</td>
+                                    <td>{{row.cost|| '-'}}</td>
+                                    <td>{{row.shares|| '-'}}</td>
+                                    <td>{{ row.$account ? row.$account.name : '-'}}</td>
+                                    <td>{{row.account_belong|| '-'}}</td>
                                     <td>
                                         <button @click="update(row)">编辑</button>
                                         <button @click="remove(row.id)">删除</button>
@@ -110,8 +110,6 @@ export default {
           http.post(`${model}/read`)
             .then(r=>{
                 this[model + '_list'] = r.data;
-                console.log(this.user_list);
-                
             })
       },
       set_user_id(row){

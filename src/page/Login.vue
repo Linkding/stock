@@ -135,10 +135,7 @@ export default {
             }else if(this.auth_by == 'signup'){
                 http.post('user/create',this.current)
                     .then(r=>{
-                        console.log('r.data',r);
-                        console.log('r.success',r.success)
                         let row = r;
-                        // this.toggle_login();
                         this.show_login = false;
                         this.$router.push('/');
                         // 向父组件传递参数

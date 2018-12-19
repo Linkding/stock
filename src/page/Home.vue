@@ -126,7 +126,7 @@
                             <td>{{ row.code }}</td>
                             <td>{{row.code == 999999 ? parseInt(1) : row.price}}</td>
                             <!-- 涨跌幅 -->
-                            <td>{{ row.pct_change && addPercentCode(math_round_after_multi(row.pct_change,1)) || '-'}}</td> 
+                            <td>{{ row.pct_chg && addPercentCode(math_round_after_multi(row.pct_chg,1)) || '-'}}</td> 
                             <td>{{ row.pre_close|| '-'  }}</td>
                             <td>{{ row.cost || '-' }}</td>
                             <td>{{ row.shares || '-' }}</td>
@@ -136,7 +136,8 @@
                             <td>{{  math_round_after_multi(row.price ,row.shares)  ||math_round_after_multi(1,row.shares)  }}</td>
                             <!-- 持仓比例 -->
                             <td>{{total_value && toPercent(math_round_after_multi(row.cost,row.shares)/total_value) ||'-'}}</td>
-                            <td>{{ row.gain_loss|| '-'  }}</td>
+                            <!-- 盈亏 -->
+                            <td>{{ math_round(math_round_after_multi(row.price ,row.shares)  - math_round_after_multi(row.cost ,row.shares))  || '-'  }}</td>
                             <td>
                               <div  @click="on_show_trade(row.name,row.code,index)" >
                                 <i class="fa fa-calculator" aria-hidden="true"></i>
@@ -202,6 +203,7 @@ export default {
     //登录成功后
     after_login_success(row){
       this.username = row[0].name;
+      this.user_id = row[0].id;
       this.init_stock();
     },
     //退出
@@ -267,7 +269,7 @@ export default {
       //更新前，获取对应股票的id和名字,以及用户id
       this.current_trade.stock_code = this.on_click_stock.code;
       this.current_trade.stock_name = this.on_click_stock.name;
-      this.current_trade.user_id = helper.get('user_id');
+      this.current_trade.user_id = this.user_id;
 
       let action = this.current_trade.id ? "update" : "create";
       http.post(`trade/${action}`, this.current_trade).then(r => {
@@ -309,10 +311,11 @@ export default {
     },
     read_stock(on_success) {
       http.post("stock/read",{
-        or:{user_id :this.user_id},
+        where:{user_id :this.user_id},
         limit:50,
       }).then(r => {
         this.stock_list = r.data;
+        console.log('this.stock_list',this.stock_list);
         if(on_success)
           on_success();
       });
@@ -339,7 +342,7 @@ export default {
       this.is_login();
 
       if(this.user_id){
-        this.read_stock(this.cal_stock_data);
+        this.read_stock(this.cal_stock_data); //执行成功，回调this.cal_stock_data
       }else {
         this.toggle_login();
       }
@@ -362,7 +365,7 @@ export default {
         for (let r = 0; r < stock_length; r++) {
           	if (real[i].ts_code.substring(0,6)  == stock_list[r].code){
             	this.$set(stock_list[r],'price',real[i].close)
-            	this.$set(stock_list[r],'pct_change',real[i].pct_change)
+            	this.$set(stock_list[r],'pct_chg',real[i].pct_chg)
             	this.$set(stock_list[r],'pre_close',real[i].pre_close)
           	}
         }
@@ -384,17 +387,20 @@ export default {
       if(!row)
         return;      
       this.username = row[0].name;
+      console.log('this.username',this.username);
       this.user_id = row[0].id;
+      console.log('this.user_id',this.user_id);
     },
     // 获取当前股票代码
     get_code_list(){
       let stock_list = this.stock_list
           ,len = stock_list.length
+          , stock_code_list = this.stock_code_list = []
           ;
 
       for (let i = 0; i < len; i++) {
         let code = stock_list[i].code;
-        this.stock_code_list.push(code);
+        stock_code_list.push(code);
       }
       
     }
