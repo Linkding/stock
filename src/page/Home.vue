@@ -266,6 +266,10 @@ export default {
     },
     cou_trade(e) {
       e.preventDefault();
+      // 若表单为空，不操作
+      if(!this.current_trade.account_id)
+        return;
+
       //更新前，获取对应股票的id和名字,以及用户id
       this.current_trade.stock_code = this.on_click_stock.code;
       this.current_trade.stock_name = this.on_click_stock.name;
@@ -284,6 +288,10 @@ export default {
     },
     cou_stock(e) {
       e.preventDefault();
+      // 如果表单为空，返回
+      if(!this.current_stock.code)
+        return;
+
       this.current_stock.user_id = this.user_id;
       let action = this.current_stock.id ? "update" : "create";
       http.post(`stock/${action}`, this.current_stock).then(r => {
