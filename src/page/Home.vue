@@ -1,5 +1,6 @@
 <template>
     <div>
+        <vue-ins-progress-bar></vue-ins-progress-bar>
         <!-- 登录组件 -->
         <Login ref="onShow" @afterLogin="after_login_success"/>
         <!-- 交易浮窗 -->
@@ -16,7 +17,6 @@
                         </div>
                     </div>
                     <div>
-                        <form v-if="show_trade_form" @submit="cou_trade($event)">
                             <div class="input-control">
                                 <select v-model="current_trade.account_id">
                                     <option v-for="(account,index) in account_list" :key="index" :value="account.id">{{account.name}}</option>
@@ -38,31 +38,33 @@
                         </form>
                     </div> 
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>序号</th>
-                            <th>账户</th>
-                            <th>姓名</th>
-                            <th>股数</th>
-                            <th>成本</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(row,index) in trade_list" :key="index">   
-                            <td>{{index + 1}}</td>
-                            <td>{{row.$account.name}}</td>
-                            <td>{{row.account_belong}}</td>
-                            <td>{{row.shares}}</td>
-                            <td>{{row.cost}}</td>
-                            <td>
-                                <span><button @click="update_trade(row)">更新</button></span>
-                                <span><button @click="remove_trade(row.id,on_click_stock.code)">删除</button></span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style="height:300px;width:100%;overflow:scroll">
+                  <table>
+                      <thead>
+                          <tr>
+                              <th>序号</th>
+                              <th>账户</th>
+                              <th>姓名</th>
+                              <th>股数</th>
+                              <th>成本</th>
+                              <th>操作</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr v-for="(row,index) in trade_list" :key="index">   
+                              <td>{{index + 1}}</td>
+                              <td>{{row.$account.name}}</td>
+                              <td>{{row.account_belong}}</td>
+                              <td>{{row.shares}}</td>
+                              <td>{{row.cost}}</td>
+                              <td>
+                                  <span><button @click="update_trade(row)">更新</button></span>
+                                  <span><button @click="remove_trade(row.id,on_click_stock.code)">删除</button></span>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+                </div>
             </div>
         </div>
         <!-- 主界面 -->
@@ -135,7 +137,7 @@
                             <!-- 持有市值 -->
                             <td>{{  math_round_after_multi(row.price ,row.shares)  ||math_round_after_multi(1,row.shares)  }}</td>
                             <!-- 持仓比例 -->
-                            <td>{{total_value && toPercent(math_round_after_multi(row.cost,row.shares)/total_value) ||'-'}}</td>
+                            <td>{{total_value && toPercent(math_round_after_multi(row.price,row.shares)/total_value) ||'-'}}</td>
                             <!-- 盈亏 -->
                             <td>{{ math_round(math_round_after_multi(row.price ,row.shares)  - math_round_after_multi(row.cost ,row.shares))  || '-'  }}</td>
                             <td>
@@ -188,15 +190,21 @@ export default {
   methods: {
     //获取最新股价
     update_real(){
+      this.$insProgress.start()
       this.get_code_list();
       // 删除现金代码
       let index = this.stock_code_list.indexOf('999999');
+      console.log('index',index);
+      
       let query_code_lit = this.stock_code_list;
-      query_code_lit.splice(index,1);
+      if ( index != -1 ){
+          query_code_lit.splice(index,1);
+      }
 
       http.api(query_code_lit)
         .then(r=>{
           this.real = r;
+          this.$insProgress.finish();
           // this.meger_real_to_stock();
         })
     },
@@ -335,7 +343,9 @@ export default {
     },
     read_trade(code, index, on_success) {
       http.post("trade/search", { 
-        or: { stock_code: code } ,
+        and: { stock_code: code ,
+          user_id:this.user_id,
+        } ,
         with:[
           {model:'account',relation:'has_one'},
           {model:'user',relation:'has_one'},
@@ -454,8 +464,9 @@ export default {
   position: absolute;
   width: 70%;
   min-height: auto;
-  top: 100px;
+  top: 80px;
   left: 15%;
+  /* bottom: 100px; */
   padding: 5px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   background: #e2d4c0;
