@@ -16,7 +16,7 @@
                           <i class="fa fa-times" aria-hidden="true"></i>
                         </div>
                     </div>
-                    <div>
+                    <div v-if="show_trade_form">
                             <div class="input-control">
                                 <select v-model="current_trade.account_id">
                                     <option v-for="(account,index) in account_list" :key="index" :value="account.id">{{account.name}}</option>
@@ -32,7 +32,7 @@
                                 <input type="text" placeholder="成本" v-model="current_trade.cost"/>
                             </div>
                             <div class="input-control">
-                                <button type="submit">确定</button>
+                                <button type="submit" @click="cou_trade($event)">确定</button>
                                 <button type="button" @click="cancel_input_trade()">取消</button>
                             </div>
                         </form>
@@ -248,6 +248,7 @@ export default {
     //取消trade表单编辑
     cancel_input_trade() {
       this.show_trade_form = false;
+      console.log('cancel_input');
       this.current_trade = {};
     },
     //点击打开交易记录
