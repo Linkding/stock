@@ -23,7 +23,10 @@
                                 </select>
                             </div>
                             <div class="input-control">
-                                <input type="text" placeholder="账户归属人" v-model="current_trade.account_belong"/>
+                              <select v-model="current_trade.account_belong_id">
+                                    <option v-for="(account_belong,index) in account_belong_list" :key="index" :value="account_belong.id">{{account_belong.name}}</option>
+                                </select>
+                                <!-- <input type="text" placeholder="账户归属人" v-model="current_trade.account_belong"/> -->
                             </div>
                                 <div class="input-control">
                                 <input type="text" placeholder="股数" v-model="current_trade.shares"/>
@@ -54,7 +57,7 @@
                           <tr v-for="(row,index) in trade_list" :key="index">   
                               <td>{{index + 1}}</td>
                               <td>{{row.$account.name}}</td>
-                              <td>{{row.account_belong}}</td>
+                              <td>{{row.$account_belong.name}}</td>
                               <td>{{row.shares}}</td>
                               <td>{{row.cost}}</td>
                               <td>
@@ -179,7 +182,8 @@ export default {
       current_trade: {},
       current_stock: {},
       trade_list: [],
-      account_list: [],
+      account_list: [], //证券账户列表
+      account_belong_list: [], //账户持有人列表
       stock_list: [],
       stock_code_list: [],
       real: [],
@@ -342,6 +346,15 @@ export default {
         this.account_list = r.data;
       });
     },
+    read_account_belong() {
+      http.post("account_belong/read",{
+        where:{
+          user_id:this.user_id,
+        }
+      }).then(r => {
+        this.account_belong_list = r.data;
+      });
+    },
     read_trade(code, index, on_success) {
       http.post("trade/search", { 
         and: { stock_code: code ,
@@ -349,6 +362,7 @@ export default {
         } ,
         with:[
           {model:'account',relation:'has_one'},
+          {model:'account_belong',relation:'has_one'},
           {model:'user',relation:'has_one'},
         ]
         }).then(r => {
@@ -438,8 +452,9 @@ export default {
     }
   },
   mounted() {
-    this.read_account();
     this.init_stock();
+    this.read_account();
+    this.read_account_belong();
   },
   watch: {
     real: {

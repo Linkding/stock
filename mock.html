@@ -80,11 +80,19 @@
     //             name:'name',
     //             type:'text',
     //             nullable:true,
-    //         },
-            
-          
+    //         },     
     //     ]
     // });
+    http.post('MODEL/CREATE',{
+        name:'account_belong',
+        structure:[
+            {
+                name:'name',
+                type:'text',
+                nullable:true,
+            },     
+        ]
+    });
     // http.post('MODEL/CREATE',{
     //     name:'user',
     //     structure:[
