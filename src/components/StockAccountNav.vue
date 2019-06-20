@@ -1,5 +1,6 @@
 <template>
     <div>
+        
         <div :style="{width:width}" class="nav-side" v-for="(account_belong,index) in account_belong_list">
             <div class="nav-item" @click="onClick(account_belong)">{{account_belong.$account.name}}-{{account_belong.name}}</div>
         </div>

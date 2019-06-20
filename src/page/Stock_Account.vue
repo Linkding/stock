@@ -1,6 +1,7 @@
 <template>
     <div>
         <vue-ins-progress-bar></vue-ins-progress-bar>
+        <Nav :pushDown="true"/>
         <div>
             <div class="container">
                 <div class="col-lg-3">
@@ -19,7 +20,7 @@
                             </div>
                             <div class="col-lg-4">持仓盈亏
                                 <br>
-                                <div class="font-bold">{{total_cost_value - cash_info.shares}}</div>
+                                <div class="font-bold">{{math_round(total_value - total_cost_value) }}</div>
                             </div>
                             <div class="col-lg-4">可用
                                 <br>
@@ -75,11 +76,13 @@
 </template>
 <script>
 import StockAccountNav from '../components/StockAccountNav';
+import Nav from '../components/Nav';
 import http from '../util/http';
 import helper from '../util/helper';
 
+
 export default {
-    components:{StockAccountNav},
+    components:{StockAccountNav,Nav},
     data() {
         return {
             perAccountStock:[], //单账户股票列表
@@ -87,7 +90,8 @@ export default {
             concat_new_stock:[], //合并最新数据股票数据的列表
             stock_code_list:[], //股票代码列表
             real :{}, // 股票实时数据
-            cash_info:{} //单独存现金数据，方便调用
+            cash_info:{}, //单独存现金数据，方便调用
+            user_id:helper.get('uinfo')[0].id,
         }
     },
     methods: {
@@ -114,7 +118,8 @@ export default {
             http.post('trade/read',{
                 where:{
                     account_belong_id:row.id,
-                    account_id:row.account_id,
+                    // account_id:row.account_id,
+                    user_id:this.user_id
                 }
             }).then(r=>{
                 this.perAccountStock = r.data; //获取当前账户的股票持仓
@@ -145,7 +150,9 @@ export default {
                 len = perAccountStock.length,
                 real = this.real,
                 real_len = real.length
-                this.concat_new_stock = [] //清空一次;
+                //清空一次;
+                this.cash_info = []
+                this.concat_new_stock = [] 
             
             for (let i = 0; i < len;i++) {
                 let code = perAccountStock[i].stock_code;
@@ -205,6 +212,10 @@ export default {
             let result = helper.sum_arr_by_props(this.concat_new_stock, "cost", "shares");
             return helper.math_round(result);
         },
+        // 计算盈亏
+        // totcal_profit_and_lost:function(){
+        //    return this.total_value - this.total_cost_value 
+        // },
         // 计算可用现金
         total_cash_value: function(){
             // this.perAccountStock[]

@@ -157,6 +157,7 @@ input, button {
 
 .input-control {
     display: inline-block;
+    padding:3px;
 }
 
 .input-control>* {

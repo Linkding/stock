@@ -48,7 +48,7 @@ img {
 
 .nav-item {
   display: inline-block;
-  padding: 1.5rem;
+  padding: 1.2rem;
   color: #555;
   text-decoration: none;
 }

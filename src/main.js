@@ -29,12 +29,13 @@ import Trade from './page/admin/Trade'
 import Account from './page/admin/Account'
 import User from './page/admin/User'
 import Stock_Account from './page/Stock_Account'
-
+import Wansen from './page/wansen/Wansen'
 
 const router = new VueRouter({
   routes:[
     {path:'/',component:Home},
     {path:'/stock_account',component:Stock_Account},
+    {path:'/wansen',component:Wansen},
     {
       path:'/admin',component:AdminBase,
       children:[

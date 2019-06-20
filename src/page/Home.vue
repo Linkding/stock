@@ -35,6 +35,9 @@
                                 <input type="text" placeholder="成本" v-model="current_trade.cost"/>
                             </div>
                             <div class="input-control">
+                                <input type="text" placeholder="负债" v-model="current_trade.debt"/>
+                            </div>
+                            <div class="input-control">
                                 <button type="submit" @click="cou_trade($event)">确定</button>
                                 <button type="button" @click="cancel_input_trade()">取消</button>
                             </div>
@@ -50,6 +53,7 @@
                               <th>姓名</th>
                               <th>股数</th>
                               <th>成本</th>
+                              <th>负债</th>
                               <th>操作</th>
                           </tr>
                       </thead>
@@ -60,6 +64,7 @@
                               <td>{{row.$account_belong.name}}</td>
                               <td>{{row.shares}}</td>
                               <td>{{row.cost}}</td>
+                              <td>{{row.debt}}</td>
                               <td>
                                   <span><button @click="update_trade(row)">更新</button></span>
                                   <span><button @click="remove_trade(row.id,on_click_stock.code)">删除</button></span>
@@ -99,7 +104,8 @@
                 <div class="banner">
                     <div class="col-lg-3">持有市值：{{total_value}}</div>
                     <div class="col-lg-3">总盈亏：{{math_round(total_value - total_cost_value) }}</div>
-                    <div class="col-lg-6 right">
+                    <div class="col-lg-3">总负债：{{total_debt }}</div>
+                    <div class="col-lg-3 right">
                       <!-- 点击获取最新股价 -->
                       <button  @click="update_real()" type="button">
                           <i class="fas fa-sync-alt"></i>
@@ -113,13 +119,14 @@
                             <th>股票代码</th>
                             <th>最新价格</th>
                             <th>涨跌幅</th>
-                            <th>昨收</th>
+                            <!-- <th>昨收</th> -->
                             <th>成本</th>
                             <th>股数</th>
                             <th>成本市值</th>
                             <th>持有市值</th>
                             <th>持仓比例</th>
                             <th>盈亏</th>
+                            <th>盈亏比例</th>
                             <th>账户</th>
                             <th>删除</th>
                             <th>操作</th>
@@ -132,7 +139,7 @@
                             <td>{{row.code == 999999 ? parseInt(1) : row.price}}</td>
                             <!-- 涨跌幅 -->
                             <td>{{ row.pct_chg && addPercentCode(math_round_after_multi(row.pct_chg,1)) || '-'}}</td> 
-                            <td>{{ row.pre_close|| '-'  }}</td>
+                            <!-- <td>{{ row.pre_close|| '-'  }}</td> -->
                             <td>{{ row.cost || '-' }}</td>
                             <td>{{ row.shares || '-' }}</td>
                             <!-- 成本市值 -->
@@ -143,6 +150,8 @@
                             <td>{{total_value && toPercent(math_round_after_multi(row.price,row.shares)/total_value) ||'-'}}</td>
                             <!-- 盈亏 -->
                             <td>{{ math_round(math_round_after_multi(row.price ,row.shares)  - math_round_after_multi(row.cost ,row.shares))  || '-'  }}</td>
+                            <!-- 盈亏比例 -->
+                            <td>{{ toPercent(math_round(math_round_after_multi(row.price ,row.shares)  - math_round_after_multi(row.cost ,row.shares)) / math_round_after_multi(row.cost ,row.shares) )}}</td>
                             <td>
                               <div  @click="on_show_trade(row.name,row.code,index)" >
                                 <i class="fa fa-calculator" aria-hidden="true"></i>
@@ -189,6 +198,9 @@ export default {
       real: [],
       username:'',
       user_id:'',
+      sh_list:[], //沪市股票列表
+      sz_list:[],  //深市股票列表
+      debt_list:[], //负债信息列表
     };
   },
   methods: {
@@ -339,6 +351,8 @@ export default {
         console.log('this.stock_list',this.stock_list);
         if(on_success)
           on_success();
+      }).then(r=>{
+        this.sort_hs();
       });
     },
     read_account() {
@@ -436,6 +450,34 @@ export default {
         stock_code_list.push(code);
       }
       
+    },
+    // 统计沪深分类
+    sort_hs(){
+      let stock_list = this.stock_list,
+          len = stock_list.length
+          ;
+      for (let i = 0;i<len;i++){
+          let code = stock_list[i].code;
+          if (code.startsWith('6')){
+            this.sh_list.push(code)
+          }else if (code.startsWith('0') || code.startsWith('0')){
+            this.sz_list.push(code)
+          }
+      }
+      
+    },
+    // 获取负债信息
+    read_debt(){
+      this.debt_list = []
+      http.post('trade/read?limit=50',{
+        where:{
+          user_id:this.user_id
+        }
+      }).then(r=>{
+        this.debt_list = r.data
+        console.log('this.debt_list',this.debt_list);
+        
+      })
     }
   },
   computed: {
@@ -446,6 +488,10 @@ export default {
       // console.log('helper.math_round(result',helper.math_round(result));
       
     },
+    total_debt:function(){
+      let res = helper.sum_arr_by_prop(this.debt_list,"debt")
+      return helper.math_round(res);
+    },
     total_cost_value: function(){
       let result = helper.sum_arr_by_props(this.stock_list, "cost", "shares");
       return helper.math_round(result);
@@ -454,6 +500,7 @@ export default {
   mounted() {
     this.init_stock();
     this.read_account();
+    this.read_debt();
     this.read_account_belong();
   },
   watch: {
@@ -461,8 +508,10 @@ export default {
       deep: true,
       handler(n) {
         this.meger_real_to_stock();
+        this.read_debt();
       }
-    }
+    },
+    
   }
 };
 </script>
