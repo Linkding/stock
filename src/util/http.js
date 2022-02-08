@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const APP_KEY  = 'af9f36c4e5c171d1c2d7b5076030d238ca23a82bab5ab3aa59197401aa1504c6';
 const BASE_API = 'https://mock.biaoyansu.com/api/1/';
-const REAL_API = 'http://119.29.72.177:8888/todo/api/v1.0/tasks';
+const REAL_API = 'http://127.0.0.1:8888/todo/api/v1.0/tasks';
 function sign (app_key, timestamp) {
   return btoa(app_key + timestamp);
 }
